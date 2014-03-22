@@ -23,8 +23,10 @@ stop_words = (
     u'он', u'она'
 )
 
+secret_chars = string.ascii_letters + string.digits
 
-def gen_secret(min_size=10, max_size=20, chars=string.ascii_letters + string.digits):
+
+def gen_secret(min_size=10, max_size=20, chars=secret_chars):
     return ''.join(random.choice(chars) for _ in range(min_size, max_size))
 
 
@@ -74,7 +76,6 @@ def get_shingles(text, shingle_len, verbose=False):
     return shingles
 
 
-
 def gen_sketch(text, secrets, shingle_len=10, verbose=False):
     shingles = get_shingles(text, shingle_len, verbose)
 
@@ -98,17 +99,18 @@ def compare(sketch1, sketch2):
 
 
 def gen_super_sketch(sketch, group_len=14, verbose=False):
-    combinations = [sketch[x:x+group_len] for x in range(0, len(sketch), group_len)]
-    vlog('sample combinations', combinations, verbose)
+    combs = [sketch[x:x + group_len] for x in range(0, len(sketch), group_len)]
+    vlog('sample combinations', combs, verbose)
 
     super_sketch = []
-    for comb in combinations:
+    for comb in combs:
         # super_sketch.append(sum(comb))
         text = ' '.join([str(num) for num in comb])
         super_sketch.append(binascii.crc32(text))
 
     vlog('super sketch:', super_sketch, verbose)
     return super_sketch
+
 
 def gen_mega_sketch(super_sketch, verbose=False):
     mega_sketch = []
@@ -139,10 +141,10 @@ if __name__ == '__main__':
                         action='store_true')
     parser.add_argument('--len', help='shingle length', type=int, default=3,
                         action='store')
-    parser.add_argument('--grouplen', help='shingle group length', type=int, default=4,
-                        action='store')
-    parser.add_argument('--hashcount', help='hash functions count', type=int, default=84,
-                        action='store')
+    parser.add_argument('--grouplen', help='shingle group length', type=int,
+                        default=4, action='store')
+    parser.add_argument('--hashcount', help='hash functions count', type=int,
+                        default=84, action='store')
     args = parser.parse_args()
 
     text1 = read_file(args.filename1)
@@ -151,8 +153,10 @@ if __name__ == '__main__':
     secrets = gen_secrets(args.hashcount)
     vlog('secrets:', secrets, args.verbose)
 
-    sketch1 = gen_sketch(text1, secrets, shingle_len=args.len, verbose=args.verbose)
-    sketch2 = gen_sketch(text2, secrets, shingle_len=args.len, verbose=args.verbose)
+    sketch1 = gen_sketch(text1, secrets, shingle_len=args.len,
+                         verbose=args.verbose)
+    sketch2 = gen_sketch(text2, secrets, shingle_len=args.len,
+                         verbose=args.verbose)
 
     print 'shingles:'
     print 'equals: {}%'.format(compare(sketch1, sketch2))

@@ -161,14 +161,14 @@ if __name__ == '__main__':
     print 'shingles:'
     print 'equals: {}%'.format(compare(sketch1, sketch2))
 
-    print 'super-shingles:'
     super_sketch1 = gen_super_sketch(sketch1, group_len=args.grouplen,
                                      verbose=args.verbose)
     super_sketch2 = gen_super_sketch(sketch2, group_len=args.grouplen,
                                      verbose=args.verbose)
+    print 'super-shingles:'
     print 'equals: {}%'.format(compare(super_sketch1, super_sketch2))
 
-    print 'mega-shingles:'
     mega_sketch1 = gen_mega_sketch(super_sketch1, verbose=args.verbose)
     mega_sketch2 = gen_mega_sketch(super_sketch2, verbose=args.verbose)
+    print 'mega-shingles:'
     print 'equals: {}%'.format(compare(mega_sketch1, mega_sketch2))

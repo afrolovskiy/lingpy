@@ -52,6 +52,7 @@ def vlog(title, value, verbose):
 
 
 def canonize(text, verbose=False):
+    # TODO: fix bug with missed spaces
     words = [y.strip(stop_symbols) for y in text.lower().split()]
     vlog('words:', words, verbose)
 

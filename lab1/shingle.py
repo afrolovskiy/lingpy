@@ -89,4 +89,4 @@ if __name__ == '__main__':
     cmp1 = gen_shingle(text1, shingle_len=args.len, verbose=args.verbose)
     cmp2 = gen_shingle(text2, shingle_len=args.len, verbose=args.verbose)
 
-    print compare(cmp1, cmp2)
+    print 'equals: {}%'.format(compare(cmp1, cmp2))

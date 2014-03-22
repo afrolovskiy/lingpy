@@ -97,6 +97,21 @@ def compare(sketch1, sketch2):
     return same / float(len(sketch1)) * 100
 
 
+def gen_super_sketch(sketch, group_len=14, verbose=False):
+    combinations = [sketch[x:x+group_len] for x in range(0, len(sketch), group_len)]
+    vlog('sample combinations', combinations, verbose)
+    import ipdb; ipdb.set_trace()
+
+    super_sketch = []
+    for comb in combinations:
+        super_sketch.append(sum(comb))
+        # text = ' '.join([str(num) for num in comb])
+        # super_sketch.append(binascii.crc32(text))
+
+    vlog('super sketch:', super_sketch, verbose)
+    return super_sketch
+
+
 def read_file(filename):
     with codecs.open(filename, encoding='utf-8') as fin:
         return fin.read()
@@ -111,14 +126,26 @@ if __name__ == '__main__':
                         action='store_true')
     parser.add_argument('--len', help='shingle length', type=int, default=3,
                         action='store')
+    parser.add_argument('--grouplen', help='shingle group length', type=int, default=4,
+                        action='store')
     args = parser.parse_args()
 
     text1 = read_file(args.filename1)
     text2 = read_file(args.filename2)
 
     secrets = gen_secrets()
+    vlog('secrets:', secrets, args.verbose)
 
     sketch1 = gen_sketch(text1, secrets, shingle_len=args.len, verbose=args.verbose)
     sketch2 = gen_sketch(text2, secrets, shingle_len=args.len, verbose=args.verbose)
 
+    print 'shingles:'
     print 'equals: {}%'.format(compare(sketch1, sketch2))
+
+    print 'super-shingles:'
+    super_sketch1 = gen_super_sketch(sketch1, group_len=args.grouplen,
+                                     verbose=args.verbose)
+    super_sketch2 = gen_super_sketch(sketch2, group_len=args.grouplen,
+                                     verbose=args.verbose)
+    print 'equals: {}%'.format(compare(super_sketch1, super_sketch2))
+

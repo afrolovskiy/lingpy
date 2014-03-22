@@ -139,8 +139,8 @@ if __name__ == '__main__':
     parser.add_argument('filename2')
     parser.add_argument('--verbose', help='increase output verbosity',
                         action='store_true')
-    parser.add_argument('--len', help='shingle length', type=int, default=3,
-                        action='store')
+    parser.add_argument('--shinglelen', help='shingle length', type=int,
+                        default=3, action='store')
     parser.add_argument('--grouplen', help='shingle group length', type=int,
                         default=4, action='store')
     parser.add_argument('--hashcount', help='hash functions count', type=int,
@@ -153,9 +153,9 @@ if __name__ == '__main__':
     secrets = gen_secrets(args.hashcount)
     vlog('secrets:', secrets, args.verbose)
 
-    sketch1 = gen_sketch(text1, secrets, shingle_len=args.len,
+    sketch1 = gen_sketch(text1, secrets, shingle_len=args.shinglelen,
                          verbose=args.verbose)
-    sketch2 = gen_sketch(text2, secrets, shingle_len=args.len,
+    sketch2 = gen_sketch(text2, secrets, shingle_len=args.shinglelen,
                          verbose=args.verbose)
 
     print 'shingles:'

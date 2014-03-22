@@ -100,16 +100,29 @@ def compare(sketch1, sketch2):
 def gen_super_sketch(sketch, group_len=14, verbose=False):
     combinations = [sketch[x:x+group_len] for x in range(0, len(sketch), group_len)]
     vlog('sample combinations', combinations, verbose)
-    import ipdb; ipdb.set_trace()
 
     super_sketch = []
     for comb in combinations:
-        super_sketch.append(sum(comb))
-        # text = ' '.join([str(num) for num in comb])
-        # super_sketch.append(binascii.crc32(text))
+        # super_sketch.append(sum(comb))
+        text = ' '.join([str(num) for num in comb])
+        super_sketch.append(binascii.crc32(text))
 
     vlog('super sketch:', super_sketch, verbose)
     return super_sketch
+
+def gen_mega_sketch(super_sketch, verbose=False):
+    mega_sketch = []
+
+    for sketch1 in super_sketch:
+        for sketch2 in super_sketch:
+            if sketch1 == sketch2:
+                continue
+            # mega_sketch.append(sketch1 + sketch2)
+            text = '%s %s' % (sketch1, sketch2)
+            mega_sketch.append(binascii.crc32(text))
+
+    vlog('mega sketch:', super_sketch, verbose)
+    return mega_sketch
 
 
 def read_file(filename):
@@ -128,12 +141,14 @@ if __name__ == '__main__':
                         action='store')
     parser.add_argument('--grouplen', help='shingle group length', type=int, default=4,
                         action='store')
+    parser.add_argument('--hashcount', help='hash functions count', type=int, default=84,
+                        action='store')
     args = parser.parse_args()
 
     text1 = read_file(args.filename1)
     text2 = read_file(args.filename2)
 
-    secrets = gen_secrets()
+    secrets = gen_secrets(args.hashcount)
     vlog('secrets:', secrets, args.verbose)
 
     sketch1 = gen_sketch(text1, secrets, shingle_len=args.len, verbose=args.verbose)
@@ -149,3 +164,7 @@ if __name__ == '__main__':
                                      verbose=args.verbose)
     print 'equals: {}%'.format(compare(super_sketch1, super_sketch2))
 
+    print 'mega-shingles:'
+    mega_sketch1 = gen_mega_sketch(super_sketch1, verbose=args.verbose)
+    mega_sketch2 = gen_mega_sketch(super_sketch2, verbose=args.verbose)
+    print 'equals: {}%'.format(compare(mega_sketch1, mega_sketch2))

@@ -14,32 +14,55 @@ class WikiContentHandler(xml.sax.ContentHandler):
     def __init__(self):
         xml.sax.ContentHandler.__init__(self)
         self.need_parse = False
+        self.is_page = False
         self.depth = 0
         self.text = None
         self.mband = None
 
+    def startElement(self, name, attrs):
+        if name == 'page':
+            self.is_page = True
+            self.depth = 0
+
+    def endElement(self, name):
+        if name == 'page':
+            self.is_page = False
+
     def characters(self, content):
-        if '}}' in self.content:
-            self.depth = self.depth - 1
+        if not self.is_page:
+            return
 
-            if self.need_parse:
-                self.text += content
-
-            if self.need_parse and self.depth == 0:
-                self.need_parse = False
-
-                text = self.text.strip('{}')
-                elements = text.split('|')
-                data = dict([el.split('=') for el in elements[1:]])
-                ipdb.set_trace()
-
-        elif u'{{' in content:
+        if '{{' in content:
             self.depth = self.depth + 1
+            # print 'start: ', content, 'depth: ', self.depth
 
             if self.depth == 1 and u'Музыкальный коллектив' in content:
+                # ipdb.set_trace()
                 self.need_parse = True
-                self.text = content
-            
+                self.text = ''
+
+        if self.need_parse:
+            self.text += content
+
+        if '}}' in content:
+            self.depth = self.depth - 1
+            # print 'end: ', content, 'depth: ', self.depth
+
+            if self.need_parse and self.depth == 0:
+                # ipdb.set_trace()
+                self.need_parse = False
+                self.parse()
+
+                # text = self.text
+                # text = ''.join(text.strip('{')[2:])
+                # text = ''.join(text.strip('}')[:-2])
+                # elements = text.split('|')
+                # data = dict([el.split('=') for el in elements[1:]])
+                # ipdb.set_trace()
+
+    def parse(self):
+        print self.text
+
 
 def parse(filename):
     with open(filename) as fin:

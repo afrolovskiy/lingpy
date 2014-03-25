@@ -45,6 +45,15 @@ class WikiDataParser(Parser):
     t_EQUALS = r'\='
     t_PIPE = r'\|'
     t_VALUE = r'[^{}|]+'
+
+    def t_newline(self, t):
+        r'\n+'
+        t.lexer.lineno += t.value.count("\n")
+
+    def t_error(self, t):
+        print "Illegal character '%s'" % t.value[0]
+        t.lexer.skip(1)
+
     t_ignore = ' \t'
 
     def p_description(self, p):
@@ -73,6 +82,12 @@ class WikiDataParser(Parser):
 if __name__ == '__main__':
     WikiDataParser().run(
         '''
-
+        {{Музыкальный коллектив
+        |Название = The Beatles
+        |Ключ = Beatles
+        |Лого = Beatles logo.svg
+        |Фото = {{часть изображения
+        | изобр = Beatles ad 1965.JPG
+        | позиция = center}}}}
         '''
     )

@@ -32,105 +32,47 @@ class Parser:
                   tabmodule=self.tabmodule)
 
     def run(self, text):
-        yacc.parse(text)
+        result = yacc.parse(text)
+        print result
 
 
-# class Calc(Parser):
+class WikiDataParser(Parser):
 
-#     tokens = (
-#         'NAME','NUMBER',
-#         'PLUS','MINUS','EXP', 'TIMES','DIVIDE','EQUALS',
-#         'LPAREN','RPAREN',
-#         )
+    tokens = ('BEGIN', 'END', 'EQUALS', 'PIPE', 'VALUE')
 
-#     # Tokens
+    t_BEGIN = r'\{\{'
+    t_END = r'\}\}'
+    t_EQUALS = r'\='
+    t_PIPE = r'\|'
+    t_VALUE = r'[^{}|]+'
+    t_ignore = ' \t'
 
-#     t_PLUS    = r'\+'
-#     t_MINUS   = r'-'
-#     t_EXP     = r'\*\*'
-#     t_TIMES   = r'\*'
-#     t_DIVIDE  = r'/'
-#     t_EQUALS  = r'='
-#     t_LPAREN  = r'\('
-#     t_RPAREN  = r'\)'
-#     t_NAME    = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    def p_description(self, p):
+        'description : BEGIN VALUE statements_list END'
+        p[0] = (p[2], p[3])
 
-#     def t_NUMBER(self, t):
-#         r'\d+'
-#         try:
-#             t.value = int(t.value)
-#         except ValueError:
-#             print "Integer value too large", t.value
-#             t.value = 0
-#         #print "parsed number %s" % repr(t.value)
-#         return t
+    def p_statement_list_empty(self, p):
+        'statements_list : '
+        p[0] = {}
 
-#     t_ignore = " \t"
+    def p_statement_list(self, p):
+        'statements_list : PIPE statement statements_list'
+        p[0] = p[2]
+        p[0].update(p[3])
 
-#     def t_newline(self, t):
-#         r'\n+'
-#         t.lexer.lineno += t.value.count("\n")
+    def p_statement(self, p):
+        '''
+        statement : VALUE EQUALS VALUE
+                  | VALUE EQUALS description
+        '''
+        p[0] = {p[1]: p[3]}
 
-#     def t_error(self, t):
-#         print "Illegal character '%s'" % t.value[0]
-#         t.lexer.skip(1)
-
-#     # Parsing rules
-
-#     precedence = (
-#         ('left','PLUS','MINUS'),
-#         ('left','TIMES','DIVIDE'),
-#         ('left', 'EXP'),
-#         ('right','UMINUS'),
-#         )
-
-#     def p_statement_assign(self, p):
-#         'statement : NAME EQUALS expression'
-#         self.names[p[1]] = p[3]
-
-#     def p_statement_expr(self, p):
-#         'statement : expression'
-#         print p[1]
-
-#     def p_expression_binop(self, p):
-#         """
-#         expression : expression PLUS expression
-#                   | expression MINUS expression
-#                   | expression TIMES expression
-#                   | expression DIVIDE expression
-#                   | expression EXP expression
-#         """
-#         #print [repr(p[i]) for i in range(0,4)]
-#         if p[2] == '+'  : p[0] = p[1] + p[3]
-#         elif p[2] == '-': p[0] = p[1] - p[3]
-#         elif p[2] == '*': p[0] = p[1] * p[3]
-#         elif p[2] == '/': p[0] = p[1] / p[3]
-#         elif p[2] == '**': p[0] = p[1] ** p[3]
-
-#     def p_expression_uminus(self, p):
-#         'expression : MINUS expression %prec UMINUS'
-#         p[0] = -p[2]
-
-#     def p_expression_group(self, p):
-#         'expression : LPAREN expression RPAREN'
-#         p[0] = p[2]
-
-#     def p_expression_number(self, p):
-#         'expression : NUMBER'
-#         p[0] = p[1]
-
-#     def p_expression_name(self, p):
-#         'expression : NAME'
-#         try:
-#             p[0] = self.names[p[1]]
-#         except LookupError:
-#             print "Undefined name '%s'" % p[1]
-#             p[0] = 0
-
-#     def p_error(self, p):
-#         print "Syntax error at '%s'" % p.value
+    def p_error(self, p):
+        print "Syntax error at '%s'" % p.value
 
 if __name__ == '__main__':
-    pass
-    # calc = Calc()
-    # calc.run()
+    WikiDataParser().run(
+        '''
+
+        '''
+    )

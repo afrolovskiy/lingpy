@@ -77,17 +77,19 @@ class WikiDataParser(Parser):
         p[0] = {p[1]: p[3]}
 
     def p_error(self, p):
-        print "Syntax error at '%s'" % p.value
+        print u'Syntax error at "%s"' % p.value
 
 if __name__ == '__main__':
     WikiDataParser().run(
-        '''
+        u'''
         {{Музыкальный коллектив
         |Название = The Beatles
         |Ключ = Beatles
         |Лого = Beatles logo.svg
         |Фото = {{часть изображения
         | изобр = Beatles ad 1965.JPG
-        | позиция = center}}}}
+        | позиция = center
+        }}
+        }}
         '''
     )

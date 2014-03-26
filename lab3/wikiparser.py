@@ -56,11 +56,14 @@ class WikiContentHandler(xml.sax.ContentHandler):
     def parse(self):
         print self.text
         import ipdb; ipdb.set_trace()
-        names = (u'Название', u'Страна', u'Годы', u'Город')
+        names = (u'Название', u'Страна', u'Годы', u'Город', u'Состав',
+                 u'Бывшие участники', u'Жанры', u'Язык')
         wikicode = mwparserfromhell.parse(self.text)
         templates = wikicode.filter_templates()
         template = templates[0]
         for param in template.params:
+            if unicode(param.name).strip() not in names:
+                continue
             print 'name:', param.name
             print 'value:', param.value
         ipdb.set_trace()

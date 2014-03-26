@@ -66,9 +66,13 @@ class WikiContentHandler(xml.sax.ContentHandler):
             if name not in names:
                 continue
 
-            print 'name:', name
-            ipdb.set_trace()
-            print 'value:', param.value
+            if name == u'Название':
+                ipdb; ipdb.set_trace()
+                band_name = unicode(param.value).strip()
+            else:
+                print 'name:', name
+                ipdb.set_trace()
+                print 'value:', param.value
         ipdb.set_trace()
         print res
 

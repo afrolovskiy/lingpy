@@ -53,15 +53,15 @@ class WikiContentHandler(xml.sax.ContentHandler):
                 self.need_parse = False
                 self.parse()
 
-                # text = self.text
-                # text = ''.join(text.strip('{')[2:])
-                # text = ''.join(text.strip('}')[:-2])
-                # elements = text.split('|')
-                # data = dict([el.split('=') for el in elements[1:]])
-                # ipdb.set_trace()
-
     def parse(self):
         print self.text
+
+        text = self.text
+        text = ''.join(text.strip('{')[2:])
+        text = ''.join(text.strip('}')[:-2])
+        elements = text.split('|')
+        data = dict([el.split('=') for el in elements[1:]])
+        ipdb.set_trace()
 
 
 def parse(filename):

@@ -62,9 +62,12 @@ class WikiContentHandler(xml.sax.ContentHandler):
         templates = wikicode.filter_templates()
         template = templates[0]
         for param in template.params:
-            if unicode(param.name).strip() not in names:
+            name = unicode(param.name).strip()
+            if name not in names:
                 continue
-            print 'name:', param.name
+
+            print 'name:', name
+            ipdb.set_trace()
             print 'value:', param.value
         ipdb.set_trace()
         print res

@@ -1,7 +1,6 @@
 # coding: utf-8
-import xml.sax
 
-import ipdb
+import xml.sax
 
 
 class MusicBand(object):

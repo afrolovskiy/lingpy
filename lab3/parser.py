@@ -80,16 +80,5 @@ class WikiDataParser(Parser):
         print u'Syntax error at "%s"' % p.value
 
 if __name__ == '__main__':
-    WikiDataParser().run(
-        u'''
-        {{Музыкальный коллектив
-        |Название = The Beatles
-        |Ключ = Beatles
-        |Лого = Beatles logo.svg
-        |Фото = {{часть изображения
-        | изобр = Beatles ad 1965.JPG
-        | позиция = center
-        }}
-        }}
-        '''
-    )
+    with open('dumps/temp') as fin:
+        WikiDataParser().run(fin.read())

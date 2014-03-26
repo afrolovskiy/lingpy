@@ -1,6 +1,7 @@
 # coding: utf-8
-
 import xml.sax
+
+import mwparserfromhell
 
 
 class MusicBand(object):
@@ -54,6 +55,16 @@ class WikiContentHandler(xml.sax.ContentHandler):
 
     def parse(self):
         print self.text
+        import ipdb; ipdb.set_trace()
+        names = (u'Название', u'Страна', u'Годы', u'Город')
+        wikicode = mwparserfromhell.parse(self.text)
+        templates = wikicode.filter_templates()
+        template = templates[0]
+        for param in template.params:
+            print 'name:', param.name
+            print 'value:', param.value
+        ipdb.set_trace()
+        print res
 
 
 def parse(filename):

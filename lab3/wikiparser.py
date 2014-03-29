@@ -1,4 +1,7 @@
 # coding: utf-8
+import sys
+from select import select
+
 import ipdb
 import xml.sax
 
@@ -36,10 +39,8 @@ class WikiContentHandler(xml.sax.ContentHandler):
 
         if '{{' in content:
             self.depth = self.depth + 1
-            # print 'start: ', content, 'depth: ', self.depth
 
             if self.depth == 1 and u'Музыкальный коллектив' in content:
-                # ipdb.set_trace()
                 self.need_parse = True
                 self.text = ''
 
@@ -48,10 +49,8 @@ class WikiContentHandler(xml.sax.ContentHandler):
 
         if '}}' in content:
             self.depth = self.depth - 1
-            # print 'end: ', content, 'depth: ', self.depth
 
             if self.need_parse and self.depth == 0:
-                # ipdb.set_trace()
                 self.need_parse = False
                 self.parse()
 
@@ -63,6 +62,10 @@ class WikiContentHandler(xml.sax.ContentHandler):
 
         print '==========================================='
         print 'count: ', self.count
+        print '+++++++++++++++++++++++++++++++++++++++++++'
+        print 'text:'
+        print self.text
+        print '+++++++++++++++++++++++++++++++++++++++++++'
 
         names = (u'Название', u'Страна', u'Страны', u'Годы', u'Город',
                  u'Состав', u'Бывшие участники', u'Жанры', u'Язык')
@@ -81,15 +84,18 @@ class WikiContentHandler(xml.sax.ContentHandler):
                 continue
 
             if name == u'Название':
-                # ipdb; ipdb.set_trace()
                 data['name'] = unicode(param.value).strip()
-                print data['name']
+                print 'Name: ', data['name']
             elif name in (u'Страна', u'Страны'):
                 if self.count in (358, 338, ):
                     ipdb.set_trace()
 
                 print 'unicode: ', unicode(param.value)
                 data['countries'] = self.parse_country(param, True)
+
+        print "Press any key to continue..."
+        rlist, wlist, xlist = select([sys.stdin], [], [])
+        sys.stdin.readline()
 
     def parse_country(self, param, verbose=False):
         def vlog():

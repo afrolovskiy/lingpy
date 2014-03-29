@@ -93,6 +93,8 @@ class WikiMusicBandParser(xml.sax.ContentHandler):
             self.depth = self.depth + 1
 
             if self.depth == 1 and u'Музыкальный коллектив' in content:
+                print 'content: ', content
+                content = content[content.index(u'{{Музыкальный коллектив'):]
                 self.need_parse = True
                 self.text = ''
 
@@ -107,6 +109,7 @@ class WikiMusicBandParser(xml.sax.ContentHandler):
                 self.parse()
 
     def parse(self):
+        print self.text
         wikicode = mwparserfromhell.parse(self.text)
         templates = wikicode.filter_templates()
 
@@ -124,7 +127,8 @@ class WikiMusicBandParser(xml.sax.ContentHandler):
             key = PARAMS_MAP[name]
             value = unicode(param.value).strip()
             params[key] = value
-        
+
+        print params.keys()        
         band = MusicBand(**params)
         band.write2stdout()
         if self.conn is not None:

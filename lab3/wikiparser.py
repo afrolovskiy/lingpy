@@ -2,9 +2,9 @@
 import sys
 from select import select
 
-import ipdb
 import xml.sax
 
+import sqlite3
 import mwparserfromhell
 
 PARSED_KEYS = (
@@ -51,19 +51,30 @@ class MusicBand(object):
         print 'members: ', self.members
         print 'former_participants: ', self.former_participants
 
-    def write2db(self):
-        pass
-        
+    def write2db(self, conn):
+        cur = conn.cursor()    
+        cur.execute("INSERT INTO band( name, countries, styles, "
+                    "years, members, former_participants) "
+                    "VALUES(?, ?, ?, ?, ?, ?)", (
+                        self.name,
+                        self.countries,
+                        self.styles,
+                        self.years,
+                        self.members,
+                        self.former_participants
+                    ))
 
 
 class WikiMusicBandParser(xml.sax.ContentHandler):
-    def __init__(self):
+    def __init__(self, conn=None, debug=False):
         xml.sax.ContentHandler.__init__(self)
         self.need_parse = False
         self.is_page = False
         self.depth = 0
         self.text = None
         self.count = 0
+        self.debug = debug
+        self.conn = conn
 
     def startElement(self, name, attrs):
         if name == 'page':
@@ -114,19 +125,42 @@ class WikiMusicBandParser(xml.sax.ContentHandler):
             value = unicode(param.value).strip()
             params[key] = value
         
-        print params.keys()
         band = MusicBand(**params)
         band.write2stdout()
+        if self.conn is not None:
+            band.write2db(self.conn)
 
-        print "Press any key to continue..."
-        rlist, wlist, xlist = select([sys.stdin], [], [])
-        sys.stdin.readline()
-
-
-def parse(filename):
-    with open(filename) as fin:
-        xml.sax.parse(fin, WikiMusicBandParser())
+        # for debug
+        if self.debug:
+            print "Press any key to continue..."
+            rlist, wlist, xlist = select([sys.stdin], [], [])
+            sys.stdin.readline()
 
 
 if __name__ == "__main__":
-    parse("dumps/ruwiki-20140324-pages-articles1.xml")
+    conn = None
+    try:
+        # init db
+        conn = sqlite3.connect('bands.db')
+        
+        try:
+            # create table 'BAND'
+            cur = conn.cursor()
+            cur.execute("CREATE TABLE band (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        "name TEXT, countries TEXT, styles TEXT, years TEXT, "
+                        "members TEXT, former_participants TEXT)")
+        except sqlite3.Error as e:
+            print "Error %s:" % e.args[0]
+
+        # parse dump
+        filename = "dumps/ruwiki-20140324-pages-articles1.xml"
+        with open(filename) as fin:
+            xml.sax.parse(fin, WikiMusicBandParser(conn))
+
+    except sqlite3.Error as e:
+        print "Error %s:" % e.args[0]
+        sys.exit(1)
+
+    finally:
+        if conn:
+            conn.close()

@@ -7,21 +7,62 @@ import xml.sax
 
 import mwparserfromhell
 
+PARSED_KEYS = (
+    u'Название',
+    u'Страна',
+    u'Страны',
+    u'Жанр',
+    u'Жанры',
+    u'Годы',
+    u'Состав',
+    u'Бывшие_участники',
+)
+
+PARAMS = (
+    'name',
+    'countries',
+    'countries',
+    'styles',
+    'styles',
+    'years',
+    'members',
+    'former_participants',
+)
+
+PARAMS_MAP = dict(zip(PARSED_KEYS, PARAMS))
+
 
 class MusicBand(object):
 
-    def __init__(self, name):
+    def __init__(self, name, countries=None, styles=None, years=None,
+                 members=None, former_participants=None):
         self.name = name
+        self.countries = countries or ''
+        self.styles = styles or ''
+        self.years = years or ''
+        self.members = members or ''
+        self.former_participants = former_participants or ''
+
+    def write2stdout(self):
+        print 'name: ', self.name
+        print 'countries: ', self.countries
+        print 'styles: ', self.styles
+        print 'years: ', self.years
+        print 'members: ', self.members
+        print 'former_participants: ', self.former_participants
+
+    def write2db(self):
+        pass
+        
 
 
-class WikiContentHandler(xml.sax.ContentHandler):
+class WikiMusicBandParser(xml.sax.ContentHandler):
     def __init__(self):
         xml.sax.ContentHandler.__init__(self)
         self.need_parse = False
         self.is_page = False
         self.depth = 0
         self.text = None
-        self.mband = None
         self.count = 0
 
     def startElement(self, name, attrs):
@@ -55,101 +96,36 @@ class WikiContentHandler(xml.sax.ContentHandler):
                 self.parse()
 
     def parse(self):
-        if self.count > 500:
-            raise Exception('Limit exceeded')
-        self.count = self.count + 1
-        data = {}
-
-        print '==========================================='
-        print 'count: ', self.count
-        print '+++++++++++++++++++++++++++++++++++++++++++'
-        print 'text:'
-        print self.text
-        print '+++++++++++++++++++++++++++++++++++++++++++'
-
-        names = (u'Название', u'Страна', u'Страны', u'Годы', u'Город',
-                 u'Состав', u'Бывшие участники', u'Жанры', u'Язык')
         wikicode = mwparserfromhell.parse(self.text)
         templates = wikicode.filter_templates()
 
         if len(templates) == 0:
-            # description is empty
             return
 
+        params = {}        
         template = templates[0]
-        
         for param in template.params:
             name = unicode(param.name).strip()
-            if name not in names:
+
+            if name not in PARSED_KEYS:
                 continue
 
-            if name == u'Название':
-                data['name'] = unicode(param.value).strip()
-                print 'Name: ', data['name']
-            elif name in (u'Страна', u'Страны'):
-                if self.count in (358, 338, ):
-                    ipdb.set_trace()
-
-                print 'unicode: ', unicode(param.value)
-                data['countries'] = self.parse_country(param, True)
+            key = PARAMS_MAP[name]
+            value = unicode(param.value).strip()
+            params[key] = value
+        
+        print params.keys()
+        band = MusicBand(**params)
+        band.write2stdout()
 
         print "Press any key to continue..."
         rlist, wlist, xlist = select([sys.stdin], [], [])
         sys.stdin.readline()
 
-    def parse_country(self, param, verbose=False):
-        def vlog():
-            if not verbose:
-                return
-
-            print 'parsed countries:'
-            for cntr in cntrs:
-                print u'country: "{}"'.format(cntr)
-
-        cntrs = []
-
-        if not unicode(param.value).strip():
-            # value is empty
-            vlog()
-            return cntrs
-
-        tmpls = [tmpl for tmpl in param.value.filter_templates()]
-        if tmpls:
-            def get_country(tmpl):
-                if len(tmpl.params) == 0:
-                    return unicode(tmpl.name)
-                return unicode(tmpl.params[0])
-            
-            cntrs = map(get_country, tmpls)
-            vlog()
-            return cntrs
-
-        links = [link for link in param.value.filter_wikilinks()]
-        if links:
-            def get_country(link):
-                if link.text:
-                    return unicode(link.text)
-                return unicode(link.title)
-
-            cntrs = map(get_country, links)
-            vlog()
-            return cntrs
-
-        tags = [unicode(tg.tag) for tg in param.value.filter_tags()]
-        strs = [unicode(s) for s in param.value.filter_text()]
-        names = []
-        for s in strs:
-            names.extend(s.split(','))
-        names = [s.strip() for s in names]
-        
-        cntrs = list(set([s for s in names if s]))
-        vlog()
-        return cntrs
-
 
 def parse(filename):
     with open(filename) as fin:
-        xml.sax.parse(fin, WikiContentHandler())
+        xml.sax.parse(fin, WikiMusicBandParser())
 
 
 if __name__ == "__main__":

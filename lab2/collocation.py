@@ -30,6 +30,46 @@ def get_pairs(words, window, verbose=False):
     return pairs
 
 
+def get_collocations(text, window, verbose=True):
+    sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
+    sentences = sent_detector.tokenize(text.strip())
+    vlog('sentences:', sentences, verbose)
+
+    pairs = []
+    for sentence in sentences:
+        vlog('sentence:', sentence, verbose)
+
+        words = nltk.PunktWordTokenizer().tokenize(sentence)
+        words = filter(lambda x: len(x) > 3, words)
+        vlog('words:', words, verbose)
+
+        pairs.extend(get_pairs(words, args.window, args.verbose))
+        vlog('pairs:', pairs, verbose)
+
+    collocations = []
+    for pair in set(pairs):
+        fr1 = len(filter(lambda p: p[0] == pair[0] or p[1] == pair[0], pairs))
+        fr2 = len(filter(lambda p: p[0] == pair[1] or p[1] == pair[1], pairs))
+        fr = len(filter(lambda p: p == pair, pairs))
+        vlog('pair={}:'.format(pair),
+             'fr1={}, fr2={}, fr={}'.format(fr1, fr2, fr),
+             verbose)
+
+        smean = float(fr) / len(pairs)
+        vlog('smean:', smean, verbose)
+
+        h0 = float(fr1) * fr2 / len(pairs) / len(pairs)
+        vlog('h0:', h0, verbose)
+
+        t = (smean - h0) / math.sqrt(smean / len(pairs))
+        vlog('t:', t, verbose)
+
+        if t > 2.576:
+            collocations.append(pair)
+
+    return collocations
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -41,37 +81,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     text = read_file(args.filename)
-
-    sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
-    sentences = sent_detector.tokenize(text.strip())
-    import ipdb
-    pairs = []
-    gwords = []
-    for sentence in sentences:
-        print "sentence: ", sentence
-        words = nltk.PunktWordTokenizer().tokenize(sentence)
-        words = filter(lambda x: len(x) > 3, words)
-        print 'words: ', words
-        gwords.extend(words)
-        # stemmer = nltk.stem.snowball.EnglishStemmer()
-        # words = map(stemmer.stem, words)
-        # print 'after stemmer: ', words
-
-        pairs.extend(get_pairs(words, args.window, args.verbose))
-
-    upairs = set(pairs)
-    freq = {p: 0 for p in upairs}
-    for p in pairs:
-        freq[p] += 1
-
-    print freq
-
-    collocations = []
-    for p in upairs:
-        smean = float(freq[p]) / len(pairs)
-        h0 = float(gwords.count(p[0])) * gwords.count(p[0]) / len(pairs) / len(pairs)
-        t = (smean - h0) / math.sqrt(smean / len(pairs))
-        if t > 2.576:
-            collocations.append(p)
-
-    print 'collocations: ', collocations
+    print 'collocations:', get_collocations(text, args.window, args.verbose)

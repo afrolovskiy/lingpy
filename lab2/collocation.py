@@ -5,6 +5,7 @@ import nltk
 
 stop_symbols = '.,;:?! -'
 
+
 def vlog(title, value, verbose):
     if not verbose:
         return

@@ -44,9 +44,11 @@ def get_collocations(text, window, verbose=True):
         vlog('sentence:', sentence, verbose)
 
         words = nltk.PunktWordTokenizer().tokenize(sentence)
+        words = [w for w in words if not w in
+                 nltk.stem.snowball.stopwords.words('english')]
         words = filter(lambda x: len(x) > 3, words)
-        words = map(stemmer.stem, words)
         words = [w.strip(stop_symbols) for w in words]
+        words = map(stemmer.stem, words)
         vlog('words:', words, verbose)
 
         pairs.extend(get_pairs(words, args.window, args.verbose))

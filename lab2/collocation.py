@@ -59,7 +59,8 @@ def get_collocations(text, window, verbose=True):
 
     collocations = []
     count = 0
-    for pair in set(pairs):
+    upairs = set(pairs)
+    for pair in :upairs
         fr1 = len(filter(lambda p: p[0] == pair[0] or p[1] == pair[0], pairs))
         fr2 = len(filter(lambda p: p[0] == pair[1] or p[1] == pair[1], pairs))
         fr = len(filter(lambda p: p == pair, pairs))
@@ -79,7 +80,7 @@ def get_collocations(text, window, verbose=True):
         if t > 2.576:
             collocations.append(pair)
 
-        print 'pairs analysed {}%'.format(count / float(len(pairs)) * 100)
+        print 'pairs analysed {}%'.format(count / float(len(upairs)) * 100)
         count += 1
 
     return collocations

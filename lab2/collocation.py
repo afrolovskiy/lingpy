@@ -60,7 +60,7 @@ def get_collocations(text, window, verbose=True):
     collocations = []
     count = 0
     upairs = set(pairs)
-    for pair in :upairs
+    for pair in upairs:
         fr1 = len(filter(lambda p: p[0] == pair[0] or p[1] == pair[0], pairs))
         fr2 = len(filter(lambda p: p[0] == pair[1] or p[1] == pair[1], pairs))
         fr = len(filter(lambda p: p == pair, pairs))

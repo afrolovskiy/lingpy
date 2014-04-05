@@ -3,6 +3,7 @@ import math
 import codecs
 import nltk
 
+stop_symbols = '.,;:?! -'
 
 def vlog(title, value, verbose):
     if not verbose:
@@ -36,17 +37,25 @@ def get_collocations(text, window, verbose=True):
     vlog('sentences:', sentences, verbose)
 
     pairs = []
+    stemmer = nltk.stem.snowball.EnglishStemmer()
+    count = 0
     for sentence in sentences:
         vlog('sentence:', sentence, verbose)
 
         words = nltk.PunktWordTokenizer().tokenize(sentence)
         words = filter(lambda x: len(x) > 3, words)
+        words = map(stemmer.stem, words)
+        words = [w.strip(stop_symbols) for w in words]
         vlog('words:', words, verbose)
 
         pairs.extend(get_pairs(words, args.window, args.verbose))
         vlog('pairs:', pairs, verbose)
 
+        print 'sentences parsed {}%'.format(count / float(len(sentences)) * 100)
+        count += 1
+
     collocations = []
+    count = 0
     for pair in set(pairs):
         fr1 = len(filter(lambda p: p[0] == pair[0] or p[1] == pair[0], pairs))
         fr2 = len(filter(lambda p: p[0] == pair[1] or p[1] == pair[1], pairs))
@@ -66,6 +75,9 @@ def get_collocations(text, window, verbose=True):
 
         if t > 2.576:
             collocations.append(pair)
+
+        print 'pairs analysed {}%'.format(count / float(len(pairs)) * 100)
+        count += 1
 
     return collocations
 

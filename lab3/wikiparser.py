@@ -52,6 +52,7 @@ class MusicBand(object):
         print 'former_participants: ', self.former_participants
 
     def write2db(self, conn):
+    	print 'write2db'
         cur = conn.cursor()    
         cur.execute("INSERT INTO band( name, countries, styles, "
                     "years, members, former_participants) "
@@ -63,6 +64,8 @@ class MusicBand(object):
                         self.members,
                         self.former_participants
                     ))
+       	cur.fetchall()
+       	conn.commit()
 
 
 class WikiMusicBandParser(xml.sax.ContentHandler):
@@ -80,13 +83,14 @@ class WikiMusicBandParser(xml.sax.ContentHandler):
         if name == 'page':
             self.is_page = True
             self.depth = 0
+            self.is_broken = False
 
     def endElement(self, name):
         if name == 'page':
             self.is_page = False
 
     def characters(self, content):
-        if not self.is_page:
+        if not self.is_page or self.is_broken:
             return
 
         if '{{' in content:
@@ -94,7 +98,11 @@ class WikiMusicBandParser(xml.sax.ContentHandler):
 
             if self.depth == 1 and u'Музыкальный коллектив' in content:
                 print 'content: ', content
-                content = content[content.index(u'{{Музыкальный коллектив'):]
+                try:
+                	content = content[content.index(u'{{Музыкальный коллектив'):]
+                except ValueError as e:
+                	print repr(e)
+                	self.is_broken = True
                 self.need_parse = True
                 self.text = ''
 
@@ -128,7 +136,9 @@ class WikiMusicBandParser(xml.sax.ContentHandler):
             value = unicode(param.value).strip()
             params[key] = value
 
-        print params.keys()        
+        print params.keys()
+        if not params.keys():
+        	return        
         band = MusicBand(**params)
         band.write2stdout()
         if self.conn is not None:

@@ -1,9 +1,11 @@
 # coding: utf-8
 import math
 import codecs
-import nltk
 
-stop_symbols = '.,;:?! -\'"'
+import nltk
+from nltk.stem.snowball import stopwords
+
+STOP_SYMBOLS = '.,;:?! -\'"'
 
 
 def vlog(title, value=None, verbose=False):
@@ -46,7 +48,7 @@ def get_collocations(text, window, verbose=False, status=False):
         smean = float(fr) / len(pairs)
         vlog('smean:', smean, verbose)
 
-        h0 = float(fr1) * fr2 / len(pairs) / len(pairs)
+        h0 = float(fr1 * fr2) / len(pairs) / len(pairs)
         vlog('h0:', h0, verbose)
 
         t = (smean - h0) / math.sqrt(smean / len(pairs))
@@ -78,11 +80,10 @@ def get_pairs(text, window, verbose=False, status=False):
         words = nltk.PunktWordTokenizer().tokenize(sentence)
 
         # remove stop words
-        words = [w for w in words if not w in
-                 nltk.stem.snowball.stopwords.words('english')]
+        words = [w for w in words if not w in stopwords.words('english')]
 
         # strip stop symbols
-        words = [w.strip(stop_symbols) for w in words]
+        words = [w.strip(STOP_SYMBOLS) for w in words]
 
         # remove very short words
         words = [w for w in words if len(w) > 3]
@@ -165,4 +166,4 @@ if __name__ == '__main__':
 
     text = read_file(args.filename)
     collocations = get_collocations(text, args.window, args.verbose, args.status)
-    vlog('collocations:', collocations, True)
+    vlog('collocations:', sorted(collocations, key=lambda x: x[1], reverse=True), True)

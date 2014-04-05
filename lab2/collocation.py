@@ -3,7 +3,6 @@ import math
 import codecs
 
 import nltk
-from nltk.stem.snowball import stopwords
 
 STOP_SYMBOLS = '.,;:?! -\'"'
 
@@ -54,7 +53,7 @@ def get_collocations(text, window, verbose=False, status=False):
         t = (smean - h0) / math.sqrt(smean / len(pairs))
         vlog('t:', t, verbose)
 
-        if t > 2.576:
+        if t > 3.291:  # 2.576:
             collocations.append((pair, t))
             vlog('added collocation:', (pair, t), verbose)
 
@@ -80,13 +79,13 @@ def get_pairs(text, window, verbose=False, status=False):
         words = nltk.PunktWordTokenizer().tokenize(sentence)
 
         # remove stop words
-        words = [w for w in words if not w in stopwords.words('english')]
+        words = [w for w in words if not w in nltk.corpus.stopwords.words('english')]
 
         # strip stop symbols
         words = [w.strip(STOP_SYMBOLS) for w in words]
 
         # remove very short words
-        words = [w for w in words if len(w) > 3]
+        words = [w for w in words if len(w) >= 3]
 
         # normalize words
         words = map(stemmer.stem, words)
